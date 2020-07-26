@@ -1,17 +1,18 @@
+import org.joml.*
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback
-import org.lwjgl.opengl.GL13
-import org.lwjgl.opengl.GL20
 import java.io.File
 import java.lang.Math.*
 import java.lang.RuntimeException
 import java.nio.*
 import org.lwjgl.stb.STBImage.*
 
-//TODO: Got up to page 59 in the PDF
+
+
+//TODO: Got up to page 83 in the PDF
 
 object HelloWorld3{
     @JvmStatic
@@ -80,6 +81,12 @@ object HelloWorld3{
         glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0)
         glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1)
 
+        val fb = BufferUtils.createFloatBuffer(16)
+        val mat = Matrix4f()
+
+        val transformLoc = glGetUniformLocation(shaderProgram, "transform")
+
+
         val floatSize = 4
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * floatSize, 0)
         glEnableVertexAttribArray(0)
@@ -104,6 +111,11 @@ object HelloWorld3{
             val greenValue = sin(timeValue) / 2.0f + 0.5f
             val vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor")
             glUniform4f(vertexColorLocation, 0.0f, greenValue.toFloat(), 0.0f, 1.0f)
+            mat.identity()
+                .rotate(timeValue.toFloat(), Vector3f(0.0f, 0.0f, 1.0f))
+                .scale(0.5f)
+                .get(fb)
+            glUniformMatrix4fv(transformLoc, false, fb)
 
             glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, texture1)
@@ -153,9 +165,6 @@ object HelloWorld3{
     }
 
     private fun createShaderProgram(vertexShader: Int, fragmentShader: Int): Int{
-
-        println(glGetInteger(GL_MAX_VERTEX_ATTRIBS))
-
         val shaderProgram = glCreateProgram()
         glAttachShader(shaderProgram, vertexShader)
         glAttachShader(shaderProgram, fragmentShader)
