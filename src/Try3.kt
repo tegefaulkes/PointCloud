@@ -3,18 +3,27 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.BufferUtils
+import org.lwjgl.glfw.GLFWCursorPosCallback
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback
+import org.lwjgl.glfw.GLFWScrollCallback
+import org.lwjgl.opengl.GL11
 import java.io.File
-import java.lang.Math.*
+//import java.lang.Math.*
+import kotlin.math.*
 import java.lang.RuntimeException
 import java.nio.*
 import org.lwjgl.stb.STBImage.*
 
-
-
-//TODO: Got up to page 83 in the PDF
+//TODO: Got up to page 110 in the PDF
 
 object HelloWorld3{
+
+    object MousePos{
+        var x = 0.0
+        var y = 0.0
+        var zoom = 0.0
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
 
@@ -37,8 +46,7 @@ object HelloWorld3{
         glfwMakeContextCurrent(window)
         GL.createCapabilities()
 
-//        causes an error, look into how to handle this with GL3.3
-//        Play around with this, i can set the output space of the screen.
+
         glViewport(0,0,800,800)
 
         val resizeWindow: GLFWFramebufferSizeCallback = object : GLFWFramebufferSizeCallback() {
@@ -54,25 +62,57 @@ object HelloWorld3{
         val vao = glGenVertexArrays()
         glBindVertexArray(vao)
         val verticies = floatArrayOf(
-            0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f)
+            -0.5f, -0.5f, -0.5f, 0f, 0f,
+            0.5f, -0.5f, -0.5f, 1f, 0f,
+            0.5f, 0.5f, -0.5f, 1f, 1f,
+            0.5f, 0.5f, -0.5f, 1f, 1f,
+            -0.5f, 0.5f, -0.5f, 0f, 1f,
+            -0.5f, -0.5f, -0.5f, 0f, 0f,
 
+            -0.5f, -0.5f, 0.5f, 0f, 0f,
+            0.5f, -0.5f, 0.5f, 1f, 0f,
+            0.5f, 0.5f, 0.5f, 1f, 1f,
+            0.5f, 0.5f, 0.5f, 1f, 1f,
+            -0.5f, 0.5f, 0.5f, 0f, 1f,
+            -0.5f, -0.5f, 0.5f, 0f, 0f,
 
-        val vbo = glGenBuffers()
+            -0.5f, 0.5f, 0.5f, 1f, 0f,
+            -0.5f, 0.5f, -0.5f, 1f, 1f,
+            -0.5f, -0.5f, -0.5f, 0f, 1f,
+            -0.5f, -0.5f, -0.5f, 0f, 1f,
+            -0.5f, -0.5f, 0.5f, 0f, 0f,
+            -0.5f, 0.5f, 0.5f, 1f, 0f,
+
+            0.5f, 0.5f, 0.5f, 1f, 0f,
+            0.5f, 0.5f, -0.5f, 1f, 1f,
+            0.5f, -0.5f, -0.5f, 0f, 1f,
+            0.5f, -0.5f, -0.5f, 0f, 1f,
+            0.5f, -0.5f, 0.5f, 0f, 0f,
+            0.5f, 0.5f, 0.5f, 1f, 0f,
+
+            -0.5f, -0.5f, -0.5f, 0f, 1f,
+            0.5f, -0.5f, -0.5f, 1f, 1f,
+            0.5f, -0.5f, 0.5f, 1f, 0f,
+            0.5f, -0.5f, 0.5f, 1f, 0f,
+            -0.5f, -0.5f, 0.5f, 0f, 0f,
+            -0.5f, -0.5f, -0.5f, 0f, 1f,
+
+            -0.5f, 0.5f, -0.5f, 0f, 1f,
+            0.5f, 0.5f, -0.5f, 1f, 1f,
+            0.5f, 0.5f, 0.5f, 1f, 0f,
+            0.5f, 0.5f, 0.5f, 1f, 0f,
+            -0.5f, 0.5f, 0.5f, 0f, 0f,
+            -0.5f, 0.5f, -0.5f, 0f, 1f)
+
+            val vbo = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         glBufferData(GL_ARRAY_BUFFER, bufferFromFloatArray(verticies), GL_STATIC_DRAW)
 
-        val indices:IntArray = intArrayOf(0,1,3,1,2,3)
-        val ebo = glGenBuffers()
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferFromIntArray(indices), GL_STATIC_DRAW)
+//        val indices:IntArray = intArrayOf(0,1,3,1,2,3)
+//        val ebo = glGenBuffers()
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
+//        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferFromIntArray(indices), GL_STATIC_DRAW)
 
-        val texCoords = floatArrayOf(
-            0.0f, 0.0f,
-            1.0f, 0.0f,
-            0.5f, 1.0f)
 
 
         glUseProgram(shaderProgram)
@@ -82,51 +122,88 @@ object HelloWorld3{
         glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1)
 
         val fb = BufferUtils.createFloatBuffer(16)
-        val mat = Matrix4f()
+        val modelMat = Matrix4f()
+        val projectionMat = Matrix4f()//.perspective(3.14f/4f, 1f, 0.1f, 100f)
 
-        val transformLoc = glGetUniformLocation(shaderProgram, "transform")
+
+        val modelLoc = glGetUniformLocation(shaderProgram, "model")
+        val viewLoc = glGetUniformLocation(shaderProgram, "view")
+        val projectionLoc = glGetUniformLocation(shaderProgram, "projection")
+
+
+
 
 
         val floatSize = 4
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * floatSize, 0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * floatSize, 0)
         glEnableVertexAttribArray(0)
 
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * floatSize, 12)
-        glEnableVertexAttribArray(1)
+//        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * floatSize, 12)
+//        glEnableVertexAttribArray(1)
 
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8*floatSize, 24)
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 5*floatSize, 12)
         glEnableVertexAttribArray(2)
 
+        glEnable(GL_DEPTH_TEST)
 
+        val cubePositions = arrayOf(
+            Vector3f(0f,0f,0f),
+            Vector3f(3f,0f,0f),
+            Vector3f(-3f,0f,0f),
+            Vector3f(0f,3f,0f),
+            Vector3f(0f,-3f,0f),
+            Vector3f(0f,0f,3f),
+            Vector3f(0f,0f,-3f),
+            Vector3f(3f,3f,3f),
+            Vector3f(-3f,-3f,-3f),
+            Vector3f(0f,3f,3f))
+
+        Camera.init(window)
 
         while(!glfwWindowShouldClose(window)){
+            val timeValue = glfwGetTime().toFloat()
+
             processInput(window)
+            Camera.updateInputs()
 
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f)
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
             glUseProgram(shaderProgram)
 
-            val timeValue = glfwGetTime()
+            Camera.getViewMat(fb)
+            glUniformMatrix4fv(viewLoc, false, fb)
+
+            projectionMat.identity()
+                .perspective(3.14f/4f, 1f, 0.1f, 1000f)
+                .get(fb)
+            glUniformMatrix4fv(projectionLoc, false, fb)
+
             val greenValue = sin(timeValue) / 2.0f + 0.5f
             val vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor")
-            glUniform4f(vertexColorLocation, 0.0f, greenValue.toFloat(), 0.0f, 1.0f)
-            mat.identity()
-                .rotate(timeValue.toFloat(), Vector3f(0.0f, 0.0f, 1.0f))
-                .scale(0.5f)
-                .get(fb)
-            glUniformMatrix4fv(transformLoc, false, fb)
+            glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f)
 
             glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, texture1)
             glActiveTexture(GL_TEXTURE1)
             glBindTexture(GL_TEXTURE_2D, texture2)
             glBindVertexArray(vao)
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)
+
+            for((index,position) in cubePositions.withIndex()){
+                modelMat.identity()
+                        .translate(position)
+                        .rotate(20f*index,1f,0.3f,0.5f)
+                        .get(fb)
+
+                //println(modelMat.toString())
+                glUniformMatrix4fv(modelLoc, false, fb)
+                glDrawArrays(GL_TRIANGLES, 0, 36)
+            }
             glBindVertexArray(0)
 
             glfwSwapBuffers(window)
             glfwPollEvents()
+//            lastFrame = timeValue
         }
 
 
