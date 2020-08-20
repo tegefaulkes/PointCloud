@@ -11,8 +11,8 @@ object Camera {
     private val upVec = Vector3f(0f, 1f, 0f)
     private val tempVec = Vector3f()
     private val viewMat = Matrix4f()
-    private const val lookSpeed = 0.5f
-    private const val moveSpeed = 5f
+    private const val lookSpeed = 0.2f
+    private const val moveSpeed = 100f
     private var moveMod = 1f
     private var window = 0L
     private var pitch = 0.0
@@ -79,8 +79,8 @@ object Camera {
 
         yaw -= xOffset * lookSpeedScaled
         pitch -= yOffset * lookSpeedScaled
-        if(pitch > 89.0) pitch = 89.0
-        if(pitch < -89.0) pitch = -89.0
+//        if(pitch > 89.0) pitch = 89.0
+//        if(pitch < -89.0) pitch = -89.0
 
         lookVec.set(cos(yaw) * cos(pitch), sin(pitch), sin(yaw) * cos(pitch))
 
@@ -93,20 +93,31 @@ object Camera {
             posVec.add(tempVec.set(lookVec).cross(upVec).normalize().mul(moveSpeedScaled))
         if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             posVec.sub(tempVec.set(lookVec).cross(upVec).normalize().mul(moveSpeedScaled))
-        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) moveMod = 2.0f
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) moveMod = 10.0f
         else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) moveMod = 0.5f
         else moveMod = 1.0f
-
-
 
     }
 
 
     fun getViewMat(buffer: FloatBuffer) {
+        getViewMat().get(buffer)
+    }
+
+    fun getViewMat(): Matrix4f{
         tempVec.set(posVec).add(lookVec)
-        viewMat.identity()
-                .lookAt(posVec, tempVec, upVec)
-                .get(buffer)
+        return viewMat.identity().lookAt(posVec, tempVec, upVec)
+    }
+
+    fun getPosVec(): Vector3f {
+        return Vector3f().set(posVec)
+    }
+
+    fun setPosvec(x: Float, y: Float, z: Float) {
+        setPosVec(Vector3f(x, y, z))
+    }
+    fun setPosVec(xyz:Vector3f) {
+        posVec.set(xyz)
     }
 
 
