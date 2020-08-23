@@ -1,12 +1,16 @@
-import org.joml.Vector3f
+import org.joml.*
 import org.lwjgl.BufferUtils
 import java.io.File
 import java.nio.FloatBuffer
+import org.lwjgl.opengl.GL33.*
 
 
-class CloudLoader(file: String) {
+class CloudLoader(file: String, shader: Shader) {
     private var count = 0
     private val data: FloatBuffer
+    private val vao: Int
+    private val shader: Shader = shader
+    private val modelMat: Matrix4f
 
     // tracking out the scope of the cloud.
     private var xMin = 0f
@@ -51,6 +55,36 @@ class CloudLoader(file: String) {
 
         }
         data.rewind()
+        modelMat = Matrix4f()
+                .identity()
+                .translate(mid().mul(-1f))
+                //.rotate(3.414f,1f,0f,0f)
+
+        // Constructing the point cloud in memory.
+        vao = glGenVertexArrays()
+        glBindVertexArray(vao)
+        val vbo = glGenBuffers()
+        glBindBuffer(GL_ARRAY_BUFFER, vbo)
+        glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
+
+
+    }
+
+    fun draw() {
+
+        shader.use()
+
+        // Setting uniforms.
+        shader.set("minZ", -10f)
+        shader.set("midZ", 20f)
+        shader.set("maxZ", 40f)
+        shader.set("model", modelMat)
+
+        // draw
+        glBindVertexArray(vao)
+        glDrawArrays(GL_POINTS, 0, count)
+
+
     }
 
     fun getData() = data

@@ -10,12 +10,15 @@ import java.nio.*
 import org.lwjgl.stb.STBImage.*
 
 
+//TODO complete point shader to change point size bassed on distance and color on height.
+
 object Main{
 
     @JvmStatic
     fun main(args: Array<String>) {
 
         val aPos = 0
+        var aspect = 1f;
 
         //Init stuff
         if (!glfwInit()) {
@@ -42,38 +45,43 @@ object Main{
         val resizeWindow: GLFWFramebufferSizeCallback = object : GLFWFramebufferSizeCallback() {
             override fun invoke(window: Long, width: Int, height: Int) {
                 glViewport(0, 0, width, height)
+                aspect = width.toFloat()/height.toFloat()
                 //update any other window vars you might have (aspect ratio, MVP matrices, etc)
             }
         }
         glfwSetFramebufferSizeCallback(window, resizeWindow)
 
-        val baseShader = Shader("shaders/shader.vert", "shaders/shader.frag")
+        //val baseShader = Shader("shaders/shader.vert", "shaders/shader.frag")
+        val baseShader = Shader("shaders/point")
 
-        val cloud = CloudLoader("data/Random city scape/raw_2909008nw.csv")
+        val cloud = CloudLoader("data/Random city scape/raw_2909008nw.csv", baseShader)
         cloud.printBounds()
         Camera.init(window)
-        Camera.setPosVec(cloud.mid())
+//        Camera.setPosVec(cloud.mid())
 
-        val vao = glGenVertexArrays()
-        glBindVertexArray(vao)
+//        val vao = glGenVertexArrays()
+//        glBindVertexArray(vao)
 
 
-        val vbo = glGenBuffers()
-        glBindBuffer(GL_ARRAY_BUFFER, vbo)
-        glBufferData(GL_ARRAY_BUFFER, cloud.getData(), GL_STATIC_DRAW)
+//        val vbo = glGenBuffers()
+//        glBindBuffer(GL_ARRAY_BUFFER, vbo)
+//        glBufferData(GL_ARRAY_BUFFER, cloud.getData(), GL_STATIC_DRAW)
 
 
         baseShader.use()
 
         val fb = BufferUtils.createFloatBuffer(16)
         val modelMat = Matrix4f()
-        val projectionMat = Matrix4f().perspective(3.14f/4f, 1f, 0.1f, 10000f)
+        val projectionMat = Matrix4f().perspective(3.14f/4f, aspect, 0.1f, 300f)
 
         val floatSize = 4
         glVertexAttribPointer(aPos, 3, GL_FLOAT, false, 3 * floatSize, 0)
         glEnableVertexAttribArray(aPos)
 
         glEnable(GL_DEPTH_TEST)
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
+        glEnable(GL_BLEND)
+        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 
 
@@ -92,22 +100,20 @@ object Main{
             Camera.getViewMat(fb)
             baseShader.set("view", Camera.getViewMat())
 
-            //projectionMat.identity().perspective(3.14f/4f, 1f, 0.1f, 1000f)
+            projectionMat.identity().perspective(3.14f/4f, aspect, 0.1f, 10000f)
             baseShader.set("projection", projectionMat)
 
-            modelMat.identity()
-                    .translate(cloud.mid())
-                    .scale(0.1f)
-                    .translate(cloud.mid().mul(-1f))
-            baseShader.set("model", modelMat)
+//            modelMat.identity()
+////                    .translate(cloud.mid())
+////                    .scale(0.1f)
+////                    .translate(cloud.mid().mul(-1f))
+//            baseShader.set("model", modelMat)
 
             val greenValue = sin(timeValue) / 2.0f + 0.5f
             val vertexColorLocation = baseShader.getUniformLocation("ourColor")
             glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f)
 
-            glBindVertexArray(vao)
-
-            glDrawArrays(GL_POINTS, 0, cloud.getNum())
+            cloud.draw()
 
             glBindVertexArray(0)
 

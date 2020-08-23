@@ -78,7 +78,7 @@ object Camera {
         lastY = MousePos.posY
 
         yaw -= xOffset * lookSpeedScaled
-        pitch -= yOffset * lookSpeedScaled
+        pitch += yOffset * lookSpeedScaled
 //        if(pitch > 89.0) pitch = 89.0
 //        if(pitch < -89.0) pitch = -89.0
 

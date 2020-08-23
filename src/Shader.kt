@@ -17,6 +17,9 @@ class Shader(vertexPath: String, fragmentPath: String) {
     val id = createShaderProgram(vertexShader, fragmentShader)
     val tempMat4FB = BufferUtils.createFloatBuffer(16)
 
+    constructor(source: String) : this("$source.vert", "$source.frag")
+
+
     fun use() = glUseProgram(id)
 
     fun <T> set (name :String, value: T) {
