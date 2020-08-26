@@ -3,13 +3,14 @@ import org.lwjgl.BufferUtils
 import java.io.File
 import java.nio.FloatBuffer
 import org.lwjgl.opengl.GL33.*
+import org.lwjgl.stb.STBImage
+import java.lang.RuntimeException
 
 
-class CloudLoader(file: String, shader: Shader) {
+class CloudLoader(file: String, private val shader: Shader) {
     private var count = 0
     private val data: FloatBuffer
     private val vao: Int
-    private val shader: Shader = shader
     private val modelMat: Matrix4f
 
     // tracking out the scope of the cloud.
@@ -51,7 +52,7 @@ class CloudLoader(file: String, shader: Shader) {
 
             data.put(x)
                     .put(y)
-                    .put(z)
+                    .put(z * 0.3048f)
 
         }
         data.rewind()
@@ -67,6 +68,30 @@ class CloudLoader(file: String, shader: Shader) {
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
 
+        //texture.
+        val path = "textures/awesomeface.png"
+
+        val texture = glGenTextures()
+        glBindTexture(GL_TEXTURE_2D, texture)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+        val width = BufferUtils.createIntBuffer(1)
+        val height = BufferUtils.createIntBuffer(1)
+        val nrChannels = BufferUtils.createIntBuffer(1)
+//        STBImage.stbi_set_flip_vertically_on_load(true)
+        val data = STBImage.stbi_load(path, width, height, nrChannels, 0)
+        if (data != null){
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(), height.get(), 0, GL_RGBA, GL_UNSIGNED_BYTE, data)
+            glGenerateMipmap(GL_TEXTURE_2D)
+        }else throw RuntimeException("Failed to load image form path: $path")
+        STBImage.stbi_image_free(data)
+
+        shader.set("tex", 0)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, texture)
 
     }
 
@@ -75,9 +100,9 @@ class CloudLoader(file: String, shader: Shader) {
         shader.use()
 
         // Setting uniforms.
-        shader.set("minZ", -10f)
-        shader.set("midZ", 20f)
-        shader.set("maxZ", 40f)
+        shader.set("minZ", -3f)
+        shader.set("midZ", 10f)
+        shader.set("maxZ", 20f)
         shader.set("model", modelMat)
 
         // draw

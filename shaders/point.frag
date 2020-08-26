@@ -8,6 +8,8 @@ uniform float minZ;
 uniform float midZ;
 uniform float maxZ;
 
+uniform sampler2D tex;
+
 vec3 minColor = vec3(1.0, 0.0, 0.0);
 vec3 midColor = vec3(0.0, 1.0, 0.0);
 vec3 maxColor = vec3(0.0, 0.0, 1.0);
@@ -18,9 +20,14 @@ float normalize(float height, float low, float high) {
     return (height - low) / (high - low);
 }
 
+void circleCheck(vec2 pointCoord) {
+    if (pow(pointCoord.x - 0.5, 2.0) + pow(pointCoord.y - 0.5, 2) >= 0.25) discard;
+}
+
 void main() {
+
+    circleCheck(gl_PointCoord);
     vec3 mixedColor = mix(minColor, midColor, normalize(height, minZ, midZ));
     mixedColor = mix(mixedColor, maxColor, normalize(height, midZ, maxZ));
-    FragColor = vec4(mixedColor, 0.5);//vec4(lightColor * objectColor, 1.0);
-//    FragColor = vec4(position.xy, 0.0, 1.0);
+    FragColor = vec4(mixedColor, 0.5);
 }

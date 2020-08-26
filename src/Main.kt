@@ -10,8 +10,6 @@ import java.nio.*
 import org.lwjgl.stb.STBImage.*
 
 
-// TODO make the points look pretty.
-
 object Main{
 
     @JvmStatic
