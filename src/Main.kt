@@ -10,7 +10,7 @@ import java.nio.*
 import org.lwjgl.stb.STBImage.*
 
 
-//TODO complete point shader to change point size bassed on distance and color on height.
+// TODO make the points look pretty.
 
 object Main{
 
@@ -18,7 +18,7 @@ object Main{
     fun main(args: Array<String>) {
 
         val aPos = 0
-        var aspect = 1f;
+        var aspect = 1f
 
         //Init stuff
         if (!glfwInit()) {
@@ -71,7 +71,6 @@ object Main{
         baseShader.use()
 
         val fb = BufferUtils.createFloatBuffer(16)
-        val modelMat = Matrix4f()
         val projectionMat = Matrix4f().perspective(3.14f/4f, aspect, 0.1f, 300f)
 
         val floatSize = 4
