@@ -52,7 +52,7 @@ object Main{
         //val baseShader = Shader("shaders/shader.vert", "shaders/shader.frag")
         val baseShader = Shader("shaders/point")
 
-        val cloud = CloudLoader("data/Random city scape/raw_2909008nw.csv", baseShader)
+        val cloud = CloudLoader("data/lecturehall/lecturehall1.pose1.object1.label.csv", baseShader)
         cloud.printBounds()
         Camera.init(window)
 //        Camera.setPosVec(cloud.mid())

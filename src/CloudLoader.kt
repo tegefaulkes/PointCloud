@@ -52,7 +52,7 @@ class CloudLoader(file: String, private val shader: Shader) {
 
             data.put(x)
                     .put(y)
-                    .put(z * 0.3048f)
+                    .put(z)// * 0.3048f)
 
         }
         data.rewind()
@@ -100,9 +100,9 @@ class CloudLoader(file: String, private val shader: Shader) {
         shader.use()
 
         // Setting uniforms.
-        shader.set("minZ", -3f)
-        shader.set("midZ", 10f)
-        shader.set("maxZ", 20f)
+        shader.set("minZ", -256f)
+        shader.set("midZ", -51f)
+        shader.set("maxZ", 152f)
         shader.set("model", modelMat)
 
         // draw
